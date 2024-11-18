@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, TextInput, StyleSheet, Text, TouchableOpacity, Animated } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, Animated } from "react-native";
 import { ThemedView } from "@/components/ThemedView";
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useRouter } from 'expo-router';
@@ -9,7 +9,6 @@ const Home: React.FC = () => {
     const [showOptions, setShowOptions] = useState(false);
     const optionsAnim = useRef(new Animated.Value(0)).current;
     const rotateAnimation = useRef(new Animated.Value(0)).current;
-
     const router = useRouter();
 
     // Animate options when showOptions changes
@@ -48,6 +47,10 @@ const Home: React.FC = () => {
                 });
                 break;
             case 'image':
+                router.push({
+                    pathname: '/NoteCard',
+                    params: { type: 'text' }
+                });
                 break;
             case 'drawing':
                 break;
