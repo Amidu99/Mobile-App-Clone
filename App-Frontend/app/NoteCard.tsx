@@ -1,21 +1,29 @@
 import React, { useState } from 'react';
 import {
-    View,
+    Image,
+    KeyboardAvoidingView,
+    Modal,
+    Platform,
+    ScrollView,
+    StyleSheet,
     Text,
     TextInput,
-    StyleSheet,
     TouchableOpacity,
-    Platform,
-    KeyboardAvoidingView,
-    ScrollView,
-    Image,
-    Modal,
+    View,
+    Alert
 } from 'react-native';
 import { ThemedView } from "@/components/ThemedView";
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import * as ImagePicker from 'expo-image-picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { router } from 'expo-router';
+import DatePicker from 'react-datepicker';
+import { useRouter } from "expo-router";
+import { auth } from '@/firebaseConfig';
+import Cookies from 'universal-cookie'; // Import cookies library
+import firebase from "firebase/compat";
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { saveNote } from "@/services/NoteService";
+import * as Notifications from 'expo-notifications';
 
 const COLORS = [
     '#ffffff', '#f28b82', '#fbbc04', '#fff475', '#ccff90',
@@ -30,7 +38,96 @@ const NoteCreationScreen: React.FC = () => {
     const [showColorPicker, setShowColorPicker] = useState(false);
     const [showReminder, setShowReminder] = useState(false);
     const [reminderDate, setReminderDate] = useState<Date | null>(null);
+    const [pinned, setPinned] = useState(false);
     const [showReminderPicker, setShowReminderPicker] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const router = useRouter();
+    const cookies = new Cookies();
+    
+    interface UserInfo {
+        picture: string;
+        name: string;
+        email: string;
+    }
+
+    Notifications.setNotificationHandler({
+        async handleNotification() {
+            return {
+                shouldShowAlert: true,
+                shouldPlaySound: true,
+                shouldSetBadge: false,
+            };
+        },
+    });
+    
+    // In handleSave method
+    const scheduleNotification = async (reminderDate: Date, noteTitle: string) => {
+        await Notifications.scheduleNotificationAsync({
+            content: {
+                title: "Reminder",
+                body: `Note: ${noteTitle}`,
+                sound: true,
+            },
+            trigger: reminderDate,
+        });
+    };
+
+    const handleSave = async () => {
+        if (!title.trim()) {
+            Alert.alert('Error', 'Please enter a title for your note');
+            return;
+        }
+        if (!auth.currentUser) {
+            Alert.alert('Error', 'Please sign in to save notes');
+            return;
+        }
+        setIsLoading(true);
+        try {
+            // // Upload all images to Firebase Storage
+            // const uploadPromises = images.map(uri => uploadImageToFirebase(uri));
+            // const imageUrls = await Promise.all(uploadPromises);
+            // Convert images to base64 for MongoDB storage
+            const imagePromises = images.map(async (uri) => {
+                const response = await fetch(uri);
+                const blob = await response.blob();
+                return new Promise<string>((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result as string);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob);
+                });
+            });
+            const base64Images = await Promise.all(imagePromises);
+            
+            if (reminderDate) {
+                await scheduleNotification(reminderDate, title);
+            }
+
+            // Prepare note data
+            const noteData = {
+                userId: auth.currentUser.uid,
+                title,
+                content: note,
+                backgroundColor,
+                images: base64Images,
+                reminder: reminderDate,
+                pinned,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            };
+            // Save note data to MongoDB
+            const save= await saveNote(noteData);
+            // Redirect to home page
+            if(save.status===201){
+                router.push('/home/homePage')
+            }
+        } catch (error) {
+            console.error('Error saving note:', error);
+            Alert.alert('Error', 'Failed to save note. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const pickImage = async () => {
         try {
@@ -57,13 +154,19 @@ const NoteCreationScreen: React.FC = () => {
     };
 
     const handleReminderChange = (event: any, selectedDate?: Date) => {
-        setShowReminderPicker(false);
-        if (selectedDate) {
-            setReminderDate(selectedDate);
+        const isWeb = Platform.OS === 'web';
+        if (isWeb) {
+            // Use a different method for web
+            const webDate = new Date(event.target.value);
+            setReminderDate(webDate);
             setShowReminder(true);
-            // Here you would typically set up the actual reminder notification
-            // using something like react-native-notifications
-            console.log('Reminder set for:', selectedDate);
+        } else {
+            // Existing mobile logic
+            setShowReminderPicker(false);
+            if (selectedDate) {
+                setReminderDate(selectedDate);
+               
+            } setShowReminder(true);
         }
     };
 
@@ -156,7 +259,9 @@ const NoteCreationScreen: React.FC = () => {
                     </TouchableOpacity>
 
                     <View style={styles.headerActions}>
-                        <TouchableOpacity style={styles.headerButton}>
+                        <TouchableOpacity style={styles.headerButton}
+                            onPress={() => setPinned(!pinned)}
+                        >
                             <Icon name="push-pin" size={24} color="#666" />
                         </TouchableOpacity>
                         <TouchableOpacity
@@ -245,8 +350,11 @@ const NoteCreationScreen: React.FC = () => {
                     </View>
 
                     <View style={styles.footerRight}>
-                        <TouchableOpacity style={styles.editedButton}>
-                            <Icon name="more-vert" size={24} color="#666" />
+                        <TouchableOpacity
+                            style={styles.toolbarButton}
+                            onPress={handleSave}
+                        >
+                            <Icon name="save" size={24} color="#666" />
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -348,6 +456,18 @@ const styles = StyleSheet.create({
     footerRight: {
         flexDirection: 'row',
         alignItems: 'center',
+    },
+    saveButton: {
+        backgroundColor: '#4285f4',
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 20,
+        marginLeft: 8,
+    },
+    saveButtonText: {
+        color: '#ffffff',
+        fontWeight: '500',
+        fontSize: 14,
     },
     editedButton: {
         padding: 8,

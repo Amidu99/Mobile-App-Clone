@@ -15,6 +15,9 @@ export default function RootLayout() {
       <Stack.Screen name="GoogleSignIn"
         options={{headerShown: false}}
       />
+      <Stack.Screen name="TaskList"
+        options={{headerShown: false}}
+      />
     </Stack>
   );
 }

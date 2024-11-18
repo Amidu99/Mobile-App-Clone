@@ -28,7 +28,7 @@ export default function Layout() {
                                 case 'helpFeedback':
                                     return 'Help';
                                 default:
-                                    return 'Search';
+                                    return '';
                             }
                         };
 
@@ -64,6 +64,10 @@ export default function Layout() {
                                         placeholder={getPlaceholder()}
                                         placeholderTextColor="#D8E0E5"
                                         style={styles.searchInput}
+                                        onChangeText={(text) => router.push({
+                                            pathname: '/home/homePage',
+                                            params: { searchText: text }
+                                        })}
                                     />
 
                                     {route.name === 'homePage' ? (

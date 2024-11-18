@@ -6,6 +6,7 @@ import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
 import { auth } from '@/firebaseConfig';
 import {router} from "expo-router";
 import Cookies from 'universal-cookie';
+import { signUp } from '@/services/AuthService';
 
 // Register your web client in Google Cloud Console and get the client ID
 const webClientId = '107356037536-f43a3lcpjbvincn853obt7m84h7t2b99.apps.googleusercontent.com';
@@ -55,6 +56,20 @@ export default function GoogleSignIn() {
                     ...userData
                 });
                 setError(null);
+
+                // Sign up user in the backend
+                const backendResponse = await signUp({
+                    name: userData.name,
+                    email: userData.email,
+                    picture: userData.picture,
+                    userId: result.user.uid,
+                });
+                
+                if (!backendResponse.ok) {
+                    console.error('Backend signup error:', backendResponse.statusText);
+                    throw new Error('Backend signup failed');
+                }
+                
                 // Store user info in cookies
                 cookies.set('user', JSON.stringify({
                     email: userData.email,
