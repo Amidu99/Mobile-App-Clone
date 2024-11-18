@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "107356037536",
+    "project_id": "mobile-app-clone",
+    "storage_bucket": "mobile-app-clone.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:107356037536:android:fb88eadf4ca7c99a5f44c5",
+        "android_client_info": {
+          "package_name": "Mobile.App.Clone"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "107356037536-f43a3lcpjbvincn853obt7m84h7t2b99.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCo8nQ1dMv8G-R-ONxakU1Td0APY2dywrc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "107356037536-f43a3lcpjbvincn853obt7m84h7t2b99.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
