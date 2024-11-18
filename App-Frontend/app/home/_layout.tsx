@@ -2,6 +2,7 @@ import { Drawer } from "expo-router/drawer";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { TextInput, TouchableOpacity, View, StyleSheet } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
+import { router } from "expo-router";
 
 export default function Layout() {
     return (
@@ -66,7 +67,11 @@ export default function Layout() {
                                     />
 
                                     {route.name === 'homePage' ? (
-                                        <TouchableOpacity style={styles.iconButton}>
+                                        <TouchableOpacity 
+                                            style={styles.iconButton}
+                                            onPress={() => router.push('../home/ProfileScreen')}
+                                        
+                                        >
                                             <Icon name="account-circle" size={30} color="#D8E0E5" />
                                         </TouchableOpacity>
                                     ) : (
@@ -157,6 +162,12 @@ export default function Layout() {
                         drawerIcon: ({ color, size }) => (
                             <Icon name="help-outline" size={size} color={color} />
                         ),
+                    }}
+                />
+                <Drawer.Screen
+                    name="ProfileScreen"
+                    options={{
+                        drawerLabel: "",
                     }}
                 />
             </Drawer>
