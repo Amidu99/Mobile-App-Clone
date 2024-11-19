@@ -3,6 +3,7 @@ import  Icon  from 'react-native-vector-icons/MaterialIcons';
 import { StyleSheet, View, TextInput, TouchableOpacity, FlatList, Text } from 'react-native';
 import {saveTaskList}  from "@/services/TaskListService";
 import {useRouter} from "expo-router";
+import {auth} from "@/firebaseConfig";
 
 interface Task {
     id: number;
@@ -37,19 +38,23 @@ const TaskList = () => {
 
     const handleSaveChanges = async () => {
         try {
-            console.log('Saving tasks:', tasks);
+            if (auth.currentUser) {
+                console.log('User:', auth.currentUser.uid);
 
-            const task = {
-                title,
-                tasks,
-            };
+                const userId = auth.currentUser.uid;
+                const task = {
+                    title,
+                    tasks,
+                    userId,
+                };
 
-            const response = await saveTaskList(task);
-            console.log('Response:', response);
-            
-            if (response) {
-                console.log('Task list saved successfully');
-                router.push('/home/homePage');
+                const response = await saveTaskList(task);
+                console.log('Response:', response);
+                
+                if (response) {
+                    console.log('Task list saved successfully');
+                    router.push('/home/homePage');
+                }
             }
         } catch (error) {
             console.error('Error saving tasks:', error);
@@ -103,7 +108,7 @@ const TaskList = () => {
                                 ]}
                                 onPress={() => handleTaskCompletion(item.id)}
                             >
-                                {item.completed && <Icon name="check" size={20} color="#4285f4" />}
+                                {item.completed && <Icon name="check" size={15} color="#fff" />}
                             </TouchableOpacity>
                             <Text style={[styles.taskText, item.completed ? styles.completed : null]}>
                                 {item.text}
@@ -120,7 +125,7 @@ const TaskList = () => {
             </View>
             <View style={styles.footer}>
                 <TouchableOpacity onPress={handleSaveChanges}>
-                    <Text style={styles.saveButtonText}>Save</Text>
+                    <Icon name="save" size={24} color="#666" />
                 </TouchableOpacity>
             </View>
         </View>
@@ -130,7 +135,7 @@ const TaskList = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: '#101010',
     },
     header: {
         flexDirection: 'row',
@@ -139,12 +144,12 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingVertical: 12,
         borderBottomWidth: 1,
-        borderBottomColor: '#e0e0e0',
+        borderBottomColor: '#252525',
     },
     titleInput: {
         fontSize: 18,
         fontWeight: '500',
-        color: '#000',
+        color: '#666',
         flex: 1,
         marginRight: 12,
     },
@@ -167,9 +172,9 @@ const styles = StyleSheet.create({
     input: {
         flex: 1,
         fontSize: 16,
-        color: '#000',
+        color: '#666',
         borderWidth: 1,
-        borderColor: '#e0e0e0',
+        borderColor: '#252525',
         borderRadius: 20,
         paddingHorizontal: 12,
         paddingVertical: 8,
@@ -184,6 +189,7 @@ const styles = StyleSheet.create({
     addButtonText: {
         color: '#fff',
         fontSize: 16,
+        fontWeight: '500',
     },
     taskContainer: {
         flexDirection: 'row',
@@ -194,7 +200,7 @@ const styles = StyleSheet.create({
         width: 24,
         height: 24,
         borderWidth: 1,
-        borderColor: '#e0e0e0',
+        borderColor: '#252525',
         borderRadius: 12,
         justifyContent: 'center',
         alignItems: 'center',
@@ -207,7 +213,7 @@ const styles = StyleSheet.create({
     taskText: {
         flex: 1,
         fontSize: 16,
-        color: '#000',
+        color: '#fff',
     },
     completed: {
         textDecorationLine: 'line-through',
@@ -220,12 +226,7 @@ const styles = StyleSheet.create({
     footer: {
         padding: 16,
         borderTopWidth: 1,
-        borderTopColor: '#e0e0e0',
-    },
-    saveButtonText: {
-        color: '#4285f4',
-        fontWeight: '500',
-        fontSize: 16,
+        borderTopColor: '#252525',
     },
 });
 

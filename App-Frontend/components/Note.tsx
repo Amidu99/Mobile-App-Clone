@@ -16,7 +16,7 @@ interface NoteCardProps {
 
 const Note: React.FC<NoteCardProps> = ({ note, onPress }) => {
     return (
-        <TouchableOpacity style={[styles.container,{backgroundColor:note.backgroundColor }]} onPress={() => onPress(note)}>
+        <TouchableOpacity style={[styles.container,{backgroundColor: note.backgroundColor === '#101010' ? '#E8E9EB' : note.backgroundColor,}]} onPress={() => onPress(note)}>
             {/* Images Row */}
             {note.images && note.images.length > 0 && (
                 <View style={styles.imageRow}>
@@ -47,10 +47,10 @@ const styles = StyleSheet.create({
     container: {
         padding: 16,
         borderWidth: 1,
-        borderColor: '#e0e0e0',
+        borderColor: '#252525',
         borderRadius: 8,
-        marginVertical: 8,
-        backgroundColor: '#ffffff',
+        margin: 10,
+        backgroundColor: '#E8E9EB',
     },
     imageRow: {
         flexDirection: 'row',
